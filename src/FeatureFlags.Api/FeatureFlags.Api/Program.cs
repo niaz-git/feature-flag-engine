@@ -33,8 +33,8 @@ namespace FeatureFlags.Api
             }
            
             );
-            builder.Services.AddScoped<FeatureMutationService>();
-            builder.Services.AddScoped<FeatureEvaluationService>();
+            builder.Services.AddScoped<IFeatureMutationService,FeatureMutationService>();
+            builder.Services.AddScoped<IFeatureEvaluationService, FeatureEvaluationService>();
 
             builder.Services.AddScoped<IFeatureRepository, FeatureRepository>();
             builder.Services.AddScoped<IOverrideRepository, OverrideRepository>();

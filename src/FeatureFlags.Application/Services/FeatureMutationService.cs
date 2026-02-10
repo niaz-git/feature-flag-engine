@@ -5,7 +5,7 @@ using FeatureFlags.Domain.Exceptions;
 
 namespace FeatureFlags.Application.Services;
 
-public class FeatureMutationService
+public class FeatureMutationService : IFeatureMutationService
 {
     private readonly IFeatureRepository _features;
     private readonly IOverrideRepository _overrides;
@@ -18,7 +18,7 @@ public class FeatureMutationService
         _overrides = overrides;
     }
 
-    public void CreateFeature(string key, bool defaultEnabled, string? description)
+    public async Task CreateFeature(string key, bool defaultEnabled, string? description)
     {
         if (string.IsNullOrWhiteSpace(key))
             throw new ValidationException("Feature key is required");
@@ -34,19 +34,19 @@ public class FeatureMutationService
         });
     }
 
-    public void UpsertOverride(
+    public async Task UpsertOverride(
         string featureKey,
         OverrideScope scope,
         string targetId,
         bool enabled)
     {
-        if (string.IsNullOrWhiteSpace(targetId))
-            throw new ValidationException("TargetId is required");
+        //if (string.IsNullOrWhiteSpace(targetId))
+        //   return CommonResponse.NotFound("TargetId is required");
 
-        var feature = _features.Get(featureKey)
-            ?? throw new NotFoundException("Feature not found");
+        var feature = _features.Get(featureKey);
+         //   ?? return CommonResponse.NotAllowed("Feature not found");
 
-        var existing = _overrides.Get(featureKey, scope, targetId);
+        var existing  =  _overrides.Get(featureKey, scope, targetId);
 
         if (existing == null)
         {

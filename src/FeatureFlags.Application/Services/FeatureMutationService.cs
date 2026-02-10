@@ -40,11 +40,11 @@ public class FeatureMutationService : IFeatureMutationService
         string targetId,
         bool enabled)
     {
-        //if (string.IsNullOrWhiteSpace(targetId))
-        //   return CommonResponse.NotFound("TargetId is required");
+        if (string.IsNullOrWhiteSpace(targetId))
+            throw new ValidationException("TargetId is required");
 
-        var feature = _features.Get(featureKey);
-         //   ?? return CommonResponse.NotAllowed("Feature not found");
+        var feature = _features.Get(featureKey)
+            ?? throw new NotFoundException("Feature not found");
 
         var existing  =  _overrides.Get(featureKey, scope, targetId);
 

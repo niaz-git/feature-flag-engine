@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace FeatureFlags.Domain.Exceptions
-{{
+{
     public class CommonResponse
     {
         public CommonResponse()
@@ -30,3 +30,4 @@ namespace FeatureFlags.Domain.Exceptions
         public static CommonResponse Invalid(object resource = null) { return new CommonResponse(400, resource); }
         public static CommonResponse NotAllowed(object resource = null) { return new CommonResponse(403, resource); }
     }
+}

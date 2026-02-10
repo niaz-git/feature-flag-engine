@@ -5,7 +5,7 @@ using FeatureFlags.Domain.Exceptions;
 
 namespace FeatureFlags.Application.Services;
 
-public class FeatureEvaluationService 
+public class FeatureEvaluationService  : IFeatureEvaluationService
 {
     private readonly IFeatureRepository _features;
     private readonly IOverrideRepository _overrides;
@@ -21,7 +21,7 @@ public class FeatureEvaluationService
         _engine = engine;
     }
 
-    public bool IsEnabled(string featureKey, FeatureContext context)
+    public async Task<bool> IsEnabled(string featureKey, FeatureContext context)
     {
         var feature = _features.Get(featureKey)
             ?? throw new NotFoundException("Feature not found");

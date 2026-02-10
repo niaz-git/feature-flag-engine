@@ -9,7 +9,7 @@ namespace FeatureFlags.Application.Interfaces
 {
     public interface IFeatureEvaluationService
     {
-        bool IsEnabled(string featureKey, FeatureContext context);
+      Task<bool> IsEnabled(string featureKey, FeatureContext context);
     }
 
 }

@@ -1,56 +1,62 @@
-﻿using FeatureFlags.Application.Services;
+﻿using FeatureFlags.Api.Framework;
+using FeatureFlags.Application.Interfaces;
+using FeatureFlags.Application.Services;
 using FeatureFlags.Domain.context;
-using Microsoft.AspNetCore.Http;
+using FeatureFlags.Domain.Enums;
+using FeatureFlags.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
 namespace FeatureFlags.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FeaturesController : ControllerBase
+    public class FeaturesController : BaseController
     {
+        private readonly IFeatureEvaluationService _evaluationService;
+        private readonly IFeatureMutationService _mutationService;
 
-        private readonly FeatureEvaluationService _service;
-        private readonly FeatureMutationService _featureMutationServie;
-
-        public FeaturesController(FeatureEvaluationService service, FeatureMutationService featureMutationServie)
+        public FeaturesController(
+            IFeatureEvaluationService evaluationService,
+            IFeatureMutationService mutationService)
         {
-            _service = service;
-            _featureMutationServie = featureMutationServie;
+            _evaluationService = evaluationService;
+            _mutationService = mutationService;
         }
 
-        [HttpGet("{key}/evaluate")]
-        public IActionResult Evaluate(
+        [HttpGet("evaluate")]
+        public async Task<IActionResult> Evaluate(
             string key,
             string? userId,
             string? groupId,
             string? region)
         {
-            var enabled = _service.IsEnabled(
+            var enabled = await _evaluationService.IsEnabled(
                 key,
                 new FeatureContext(userId, groupId, region));
 
             return Ok(new { feature = key, enabled });
         }
 
-        [HttpPost("{key}/create")]
-        public IActionResult CreateFeature(
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateFeature(
             string key,
             bool defaultEnabled,
             string? description)
         {
             try
             {
-                _featureMutationServie.CreateFeature(key, defaultEnabled, description);
-                return Ok();
+                await _mutationService.CreateFeature(key, defaultEnabled, description);
+                return Response(CommonResponse.Ok($"{key} data created"));
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest();
+                return Response(CommonResponse.Invalid("Data not inserted"));
             }
-           
         }
-        [HttpPut("{key}/overrides")]
-        public IActionResult UpsertOverride(
+
+        [HttpPut("overrides")]
+        public async Task<IActionResult> UpsertOverride(
             string key,
             string scope,
             string targetId,
@@ -58,24 +64,25 @@ namespace FeatureFlags.Api.Controllers
         {
             try
             {
-                if (!Enum.TryParse<Domain.Enums.OverrideScope>(scope, true, out var overrideScope))
+                if (!Enum.TryParse<OverrideScope>(scope, true, out var overrideScope))
                 {
-                    return BadRequest("Invalid scope");
+                    return Response(CommonResponse.NoContent($"{key} data created"));
                 }
-                _featureMutationServie.UpsertOverride(
+                await _mutationService.UpsertOverride(
                     key,
                     overrideScope,
                     targetId,
                     enabled);
-                return Ok();
-
-            }catch(Exception ex)
+                return Response(CommonResponse.Ok($"{key} data created"));
+            }
+            catch (KeyNotFoundException)
             {
-                return BadRequest();
+                return Response(CommonResponse.NotFound("Data not inserted"));
+            }
+            catch
+            {
+                return Response(CommonResponse.Invalid("Data not inserted"));
             }
         }
-
-
-
     }
 }
